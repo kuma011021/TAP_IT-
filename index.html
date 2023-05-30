@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>TAP IT!</title>
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<link rel="icon" type="image/x-icon" href="smash.png">
+	<script src="jquery-3.6.4.min.js"></script>
+</head>
+<body>
+	<div class="container" id="main">
+		<h1>Tap as many balls as you can within the time limit.</h1>
+		<div id="play-again-container">
+			<button id="play-again">Play Again</button>
+		</div>
+		<h3 class="about">About</h3>
+		<div class="about1">
+			<p>Group Members:</p>
+			<p>Francisco, Shaun Emmanuel</p>
+			<p>Malunda, Severin James</p>
+			<p>Apura,Mhacy Giles</p>
+			<p>Ortizo, Kristel Hone</p>
+			<p>Velasco, Sharia</p>
+			<p>Inayan, Georgina</p>
+		</div>
+		
+		
+		
+		
+		
+		<div class="level-selection">
+
+			<h3>Select difficulty:</h3>
+			<select id="level">
+				<option value="easy">Easy</option>
+				<option value="average">Average</option>
+				<option value="hard">Hard</option>
+			</select>
+		</div>
+
+		<div id="start">
+			<h1>TAP IT!</h1>
+			<p>A game to enjoy and learn at the same time.</p>
+			<h2 id="startgame">START</h2>
+			<a href="https://www.facebook.com/isatulaboratoryschool" target="_blank"><div id="logo1"></div></a>
+			<a href="https://www.isatu.edu.ph/?fbclid=IwAR2sS53SqJ1gYpfto99oA1UmTNy1fxH4PUzJAa-SSH6t3pdnPYSp_UlpUb8" target="_blank"><div id="logo2"></div></a>
+		</div>
+		<button id="back">BACK</button>
+		<div class="score-container">
+			<p><span id="score">0</span></p>
+			<p><span id="timer">Time left: </span></p>
+			<p>Coins: <span id="coinCount">0</span></p>
+		</div>
+		<div class="crystal-container">
+			<div class="crystal" id="crystal1"></div>
+			<div class="crystal" id="crystal2"></div>
+			<div class="crystal" id="crystal3"></div>
+			<div class="crystal" id="crystal4"></div>
+			<div class="crystal" id="crystal5"></div>
+			<div class="crystal" id="crystal6"></div>
+		</div>
+		<div class="question-container">
+			<div class="question-popup">
+				<button class="close-btn">&times;</button>
+				<h2 id="message">Question</h2>
+				<p id="question"></p>
+				<div id="choices"></div>
+				<div id="result"></div>
+				
+			</div>
+		</div>
+		
+		<h2 id="shop">Shop</h2>
+		<div class="shop">
+			<div class="shop-popup">
+				<button class="close-btn">&times;</button>
+				
+					<div class="shop-content" id="skin1">Skin 1 - 10 coins <button class="purchase" id="purchase-btnred" data-gradient="linear-gradient(19deg, #3EECAC 0%, #EE74E1 100%)" data-coins="10">Purchase</button></div>
+					<div class="shop-content" id="skin2">Skin 2 - 10 coins <button class="purchase" id="purchase-btngreen" data-gradient="linear-gradient(45deg, #FBDA61 0%, #FF5ACD 100%)" data-coins="10">Purchase</button></div>
+					<div class="shop-content" id="skin3">Skin 3 - 10 coins <button class="purchase" id="purchase-btnblue" data-gradient="linear-gradient(45deg, #85FFBD 0%, #FFFB7D 100%)" data-coins="10">Purchase</button></div>
+				
+			</div>
+		</div>
+	</div>
+
+	<script>
+		$(document).ready(function() {
+			$(".about1").hide();
+			var score = 0;
+			var timeLeft;
+			var timerId;
+			var currentDifficulty;
+			$(".about").click(function(){
+				$(".about1").slideToggle();
+			});
+
+			function move() {
+				var containerWidth = $('.container').width();
+				var containerHeight = $('.container').height();
+				var crystalSize = 100;
+
+				$('.crystal').each(function() {
+					var x = Math.floor(Math.random() * (containerWidth - crystalSize));
+					var y = Math.floor(Math.random() * (containerHeight - crystalSize));
+					x = Math.max(x, 100); // Ensure x is not negative
+					y = Math.max(y, 250); // Ensure y is not negative
+					$(this).css({ top: y, left: x });
+				});
+			}
+
+			function updateScore(score) {
+				$('#score').text('Score: ' + score);
+			}
+
+			function startTimer() {
+				timerId = setInterval(function() {
+					timeLeft--;
+					$('#timer').text('Time left: ' + timeLeft + ' seconds');
+					if (timeLeft === 0) {
+						clearInterval(timerId);
+						$(".question-container").show();
+						$("#message").html("<h4>Answer the question correctly to get " + score + " coins</h4>");
+						generateRandomQuestion(); // Generate and display the question
+					}
+				}, 1000);
+			}
+
+			$(".shop-popup").hide();
+			$("#shop").click(function() {
+				$(".shop-popup").show();
+			});
+			$('.close-btn').click(function() {
+				$(".shop-popup").hide();
+			});
+			$("#back").click(function() {
+				$("#start").show();
+				$(".level-selection").show();
+				$(".about").show();
+			});
+
+			$(".question-container").hide();
+			$('.close-btn').click(function() {
+				$(".question-container").hide();
+			});
+
+			$('#startgame').click(function() {
+				currentDifficulty = $('#level').val();
+				var numCrystals = 6;
+				timeLeft = 30;
+
+				if (currentDifficulty === 'average') {
+					numCrystals = 4;
+					timeLeft = 20;
+				} else if (currentDifficulty === 'hard') {
+					numCrystals = 2;
+					timeLeft = 10;
+				}
+
+				$('.crystal').hide(); // Hide all crystals
+				$('.crystal:lt(' + numCrystals + ')').show(); // Show the specified number of crystals
+
+				score = 0; // Reset score
+				updateScore(score); // Update score display
+
+				startTimer();
+				$('#start').hide();
+				$(".level-selection").hide();
+				$(".about").hide();
+				$(".about1").hide();
+				$("#play-again-container").hide(); // Hide play again button
+			});
+
+			$('.crystal').click(function() {
+				var containerWidth = $('.container').width();
+				var containerHeight = $('.container').height();
+				var crystalSize = 100;
+				score++;
+				updateScore(score);
+				var x = Math.random() * (containerWidth - crystalSize);
+				var y = Math.random() * (containerHeight - crystalSize);
+				x = Math.max(x, 100); // Ensure x is not negative
+				y = Math.max(y, 250); // Ensure y is not negative
+				$(this).css({ top: y, left: x });
+			});
+
+			var coins = 0; // Initial number of coins
+
+			// Update coin count on the page
+			function updateCoinCount() {
+				$("#coinCount").text(coins);
+			}
+
+			// Event handler for color buttons
+			$(".purchase").click(function() {
+				var color = $(this).data("gradient");
+				var requiredCoins = $(this).data("coins");
+
+				if (coins >= requiredCoins) {
+					coins -= requiredCoins;
+					updateCoinCount();
+					$("#main").css("background", color);
+				} else {
+					alert("Not enough coins to purchase.");
+				}
+			});
+
+			// Function to generate and display a random question based on difficulty
+			function generateRandomQuestion() {
+			    var easyQuestions = [
+			        "Find the product of (2x+5)²",
+			        "Which of the following subatomic particles has a mass of approximately 1 atomic mass unit (AMU)?",
+			        "What causes a tsunami?",
+			       
+			        "What is the grammatically incorrect sentence often attributed to Yogi Berra?",
+			        "Which of the following is not a symptom of depression?",
+			        "Which type of energy is stored in an object due to its position or shape?"
+			    ];
+
+			    var easyChoices = [
+			        ["a. 4x²+20x+25", "b. 4x²+10x+25", "c. 4x²+20x²+25", "d. 4x²+10x²+25"],
+			        ["a) Proton", "b) Neutron", "c) Electron"],
+			        ["a) Earthquake", "b) Hurricane", "c) Tornado"],
+			        
+			        ["a) 'You can observe a lot just by watching.'", "b) 'It ain't over 'til it's over.'", "c) 'To be or not to be, that's the question.'"],
+			        ["a) Loss of appetite", "b) Excessive sleep", "c) Hyperactivity"],
+			        ["a) Thermal energy", "b) Chemical energy", "c) Potential energy"]
+			    ];
+			    var easyCorrectAnswers = [0, 1, 0, 1, 2, 2];
+
+
+				var averageQuestions = [
+				    "What is the scientific term for the process by which charged particles move through a conductor?",
+				    "Which of the following diseases is not classified as a form of cancer?",
+				    "What is the term used to describe the process by which a gas transitions directly into a solid without first becoming a liquid?",
+				    "What is the specific virus responsible for causing AIDS?",
+				    "Which literary device is employed when a character or event symbolizes an abstract idea or common cultural symbol?",
+				    "What type of particle carries the force of the electromagnetic interaction?",
+				    "What medical term is used to describe a condition characterized by recurring seizures?"
+				];
+
+				var averageChoices = [
+				    ["a) Electromagnetic induction", "b) Electric current", "c) Electric resistance"],
+				    ["a) Leukemia", "b) Tuberculosis", "c) Lung cancer"],
+				    ["a) Condensation", "b) Sublimation", "c) Deposition"],
+				   
+				    ["a) Hepatitis B", "b) Human papillomavirus", "c) Human immunodeficiency virus"],
+				    ["a) Symbolism", "b) Metaphor", "c) Simile"],
+				    ["a) Photon", "b) Neutrino", "c) Positron"],
+				    ["a) Epilepsy", "b) Parkinson's disease", "c) Multiple sclerosis"]
+				];
+				var averageCorrectAnswers = [1, 1, 2, 2, 0, 0, 0];
+
+
+				var hardQuestions = [
+				    "Which type of bond involves the sharing of electrons between two atoms?",
+				    "Which vitamin is essential for proper blood clotting?",
+				    "Which of the following is an example of a first-class lever?",
+				    "Which author wrote the novel 'Heart of Darkness'?",
+				    "What is the process by which rocks, minerals, and other materials are broken down into smaller pieces by physical means such as wind and water?",
+				    "Which of the following is not a type of rock?",
+				    "What is the medical term for a stroke?",
+				    "Which novel was originally titled 'First Impressions' before being published under its current title in 1813?",
+				    "What is the most abundant gas in Earth's atmosphere?"
+				    
+				];
+
+				var hardChoices = [
+				    ["a) Ionic bond", "b) Covalent bond", "c) Hydrogen bond"],
+				    ["a) Vitamin A", "b) Vitamin C", "c) Vitamin K"],
+				    ["a) Wheelbarrow", "b) Scissors", "c) Seesaw"],
+				    ["a) Ernest Hemingway", "b) Joseph Conrad", "c) F. Scott Fitzgerald"],
+				    ["a) Erosion", "b) Weathering", "c) Deposition"],
+				    ["a) Igneous", "b) Sedimentary", "c) Metamorphic", "d) Magnetic"],
+				   
+				    ["a) Myocardial infarction", "b) Cerebral palsy", "c) Cerebrovascular accident"],
+				    ["a) 'Sense and Sensibility'", "b) 'Pride and Prejudice'", "c) 'Emma'"],
+				    ["a) Nitrogen", "b) Oxygen", "c) Carbon dioxide"],
+				    
+				];
+				var hardCorrectAnswers = [1, 2, 2, 1, 1, 3, 2, 1, 0];
+
+				var questions;
+				var choices;
+				var correctAnswers;
+
+				if (currentDifficulty === 'easy') {
+					questions = easyQuestions;
+					choices = easyChoices;
+					correctAnswers = easyCorrectAnswers;
+				} else if (currentDifficulty === 'average') {
+					questions = averageQuestions;
+					choices = averageChoices;
+					correctAnswers = averageCorrectAnswers;
+				} else if (currentDifficulty === 'hard') {
+					questions = hardQuestions;
+					choices = hardChoices;
+					correctAnswers = hardCorrectAnswers;
+				}
+
+				var randomIndex = Math.floor(Math.random() * questions.length);
+				var question = questions[randomIndex];
+				var answerChoices = choices[randomIndex];
+				var correctAnswer = correctAnswers[randomIndex];
+
+				$("#question").text(question);
+
+				$("#choices").empty();
+				for (var i = 0; i < answerChoices.length; i++) {
+					var choice = $("<div>").addClass("choice").text(answerChoices[i]);
+					$("#choices").append(choice);
+				}
+
+				$(".choice").click(function() {
+					$("#result").show();
+					var selectedAnswer = $(this).index();
+					$(".choice").off("click"); // Disable further clicks on choices
+
+					if (selectedAnswer === correctAnswer) {
+						$("#result").text("Correct! You earned " + score + " coins.");
+						coins += score; // Increase coins by the score
+						updateCoinCount();
+					} else {
+						$("#result").text("Wrong! You didn't earn any coins.");
+					}
+
+					$("#play-again-container").show(); // Show play again button
+				});
+			}
+
+			$("#play-again").click(function() {
+				score = 0;
+				$(".question-container").hide();
+				$("#result").hide();
+				$("#play-again-container").hide(); // Hide play again button
+				if (currentDifficulty === 'average') {
+					timeLeft = 20;
+				} else if (currentDifficulty === 'hard') {
+					timeLeft = 10;
+				} else if (currentDifficulty === 'easy') {
+					timeLeft = 30;
+				}
+
+				startTimer();
+			});
+
+			move();
+			$(window).resize(move);
+		});
+	</script>
+</body>
+</html>
