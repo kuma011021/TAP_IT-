@@ -1,1 +1,6 @@
 # TAP_IT-
+Developed by: Gio Anthony Callos
+BSIS 1-A
+WEST VISAYAS STATE UNIVERSITY -MAIN CAMPUS
+05/30/2023
+-0110.
